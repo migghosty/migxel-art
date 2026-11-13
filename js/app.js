@@ -655,6 +655,7 @@ async function loadHistory(reset) {
   if (historyLoading) return;
   const status = $('history-status');
   if (reset) {
+    checkLegacy();
     $('cards').replaceChildren();
     historyCursor = null;
     $('history-more').hidden = true;
@@ -678,6 +679,68 @@ async function loadHistory(reset) {
   }
 }
 $('history-refresh').addEventListener('click', () => loadHistory(true));
+
+/* ---------- import canvases saved by earlier versions of the app ---------- */
+
+// Shows the Import button only if the account has records under an old name.
+async function checkLegacy() {
+  const button = $('history-import');
+  button.hidden = true;
+  if (!state.user) return;
+  try {
+    const found = await pds.listLegacyCanvases({ peek: true });
+    button.hidden = found.length === 0;
+  } catch {
+    /* not important enough to report */
+  }
+}
+
+$('history-import').addEventListener('click', async () => {
+  const button = $('history-import');
+  const status = $('history-status');
+  button.disabled = true;
+  try {
+    status.textContent = 'Looking for old canvases…';
+    const old = await pds.listLegacyCanvases();
+    const imported = [];
+    let skipped = 0;
+    for (const [i, item] of old.entries()) {
+      status.textContent = `Importing ${i + 1} of ${old.length}…`;
+      let record;
+      try {
+        record = M.toRecord(M.fromRecord(item.value), {
+          name: item.value.name,
+          createdAt: item.value.createdAt,
+          updatedAt: item.value.updatedAt,
+        });
+      } catch {
+        skipped++;
+        continue;
+      }
+      // Reusing the old record key makes a repeated import overwrite, not duplicate.
+      await pds.saveCanvas(record, item.rkey);
+      imported.push(item);
+    }
+    const note = skipped ? ` ${skipped} could not be read and were left alone.` : '';
+    let removed = 0;
+    if (imported.length && confirm(
+      `Imported ${imported.length} canvas(es).${note}\n\nAlso delete the old copies from your PDS? ` +
+      'They are no longer needed, and this cannot be undone.',
+    )) {
+      for (const item of imported) {
+        status.textContent = `Removing old copy ${removed + 1} of ${imported.length}…`;
+        await pds.deleteLegacyCanvas(item);
+        removed++;
+      }
+    }
+    await loadHistory(true);
+    status.textContent = `Imported ${imported.length} canvas(es).${note}` + (removed ? ` Removed ${removed} old copies.` : '');
+  } catch (err) {
+    status.textContent = `Import failed: ${err.message}`;
+  } finally {
+    button.disabled = false;
+  }
+});
 $('history-more').addEventListener('click', () => loadHistory(false));
 
 /* ---------- start ---------- */

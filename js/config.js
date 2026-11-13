@@ -5,6 +5,13 @@
 // records saved under the old name will not show up under a new one.
 export const CANVAS_COLLECTION = 'io.github.migghosty.migxelart.canvas';
 
+// Record names used by earlier versions of the app. History offers to import
+// canvases found under these names into CANVAS_COLLECTION.
+export const LEGACY_COLLECTIONS = [
+  'com.example.pixelart.canvas',
+  'com.example.migxelart.canvas',
+];
+
 // Limits that mirror the lexicon.
 export const MAX_SIZE = 256;
 export const MAX_COLORS = 256;

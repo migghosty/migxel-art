@@ -4,6 +4,7 @@
 import { BrowserOAuthClient } from '../vendor/oauth-client-browser.js';
 import {
   CANVAS_COLLECTION,
+  LEGACY_COLLECTIONS,
   HANDLE_RESOLVER,
   OAUTH_SCOPE,
   PRODUCTION_CLIENT_METADATA_PATH,
@@ -135,6 +136,31 @@ export async function saveCanvas(record, rkey) {
 export async function deleteCanvas(rkey) {
   await xrpc('POST', 'com.atproto.repo.deleteRecord', {
     json: { repo: session.did, collection: CANVAS_COLLECTION, rkey },
+  });
+}
+
+// Returns every record saved under the record names of earlier app versions:
+// [{ collection, rkey, value }]. With `peek`, stops after the first one found.
+export async function listLegacyCanvases({ peek = false } = {}) {
+  const found = [];
+  for (const collection of LEGACY_COLLECTIONS) {
+    let cursor;
+    do {
+      const data = await xrpc('GET', 'com.atproto.repo.listRecords', {
+        params: { repo: session.did, collection, limit: peek ? 1 : 100, cursor },
+      });
+      for (const r of data.records) found.push({ collection, rkey: rkeyOf(r.uri), value: r.value });
+      if (peek && found.length) return found;
+      cursor = data.records.length ? data.cursor : undefined;
+    } while (cursor && !peek);
+  }
+  return found;
+}
+
+export async function deleteLegacyCanvas({ collection, rkey }) {
+  if (!LEGACY_COLLECTIONS.includes(collection)) throw new Error('Not a legacy collection.');
+  await xrpc('POST', 'com.atproto.repo.deleteRecord', {
+    json: { repo: session.did, collection, rkey },
   });
 }
 
