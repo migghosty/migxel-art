@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Migxel Art</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <a class="brand" href="./" id="nav-editor">Migxel Art</a>
+      <nav>
+        <button class="link" id="nav-new" type="button">New</button>
+        <button class="link" id="nav-history" type="button">History</button>
+        <span class="who" id="who" hidden></span>
+        <button class="link" id="nav-login" type="button">Login</button>
+      </nav>
+    </header>
+
+    <main id="view-editor" class="editor">
+      <section class="stage">
+        <div class="toolbar">
+          <input id="canvas-name" class="name" type="text" maxlength="64" placeholder="Untitled" aria-label="Canvas name">
+          <span class="meta" id="canvas-meta"></span>
+          <span class="spacer"></span>
+          <button class="btn" id="btn-save" type="button">Save</button>
+          <button class="btn" id="btn-share" type="button">Share <span class="butterfly" aria-hidden="true">🦋</span></button>
+        </div>
+        <div class="board-scroll" id="board-scroll">
+          <canvas id="board" aria-label="Pixel canvas"></canvas>
+        </div>
+        <div class="subbar">
+          <div class="seg" role="group" aria-label="Tool">
+            <button class="btn small" id="tool-pencil" type="button" aria-pressed="true" title="Pencil (P)">Pencil</button>
+            <button class="btn small" id="tool-fill" type="button" aria-pressed="false" title="Fill (F)">Fill</button>
+          </div>
+          <button class="btn small" id="btn-undo" type="button" title="Undo (Ctrl+Z)">Undo</button>
+          <span class="spacer"></span>
+          <label class="check"><input type="checkbox" id="grid-toggle" checked> Grid</label>
+          <button class="btn small" id="zoom-out" type="button" aria-label="Zoom out">−</button>
+          <span class="meta" id="zoom-label"></span>
+          <button class="btn small" id="zoom-in" type="button" aria-label="Zoom in">+</button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <aside class="side">
+        <div class="active-colors">
+          <button class="chip primary" id="chip-primary" type="button" title="Primary color (left click)"></button>
+          <button class="chip secondary" id="chip-secondary" type="button" title="Secondary color (right click)"></button>
+          <button class="swap" id="swap" type="button" title="Swap colors (X)" aria-label="Swap colors">⤵</button>
+        </div>
+        <h2>Colors</h2>
+        <div class="swatches" id="swatches"></div>
+        <label class="wheel" title="Pick any color">
+          <input type="color" id="custom-color" value="#1e1e1e" aria-label="Pick any color">
+        </label>
+        <p class="hint">Left click paints the front color, right click the back color.</p>
+      </aside>
+    </main>
+
+    <main id="view-history" class="history" hidden>
+      <div class="history-head">
+        <h1>History</h1>
+        <button class="btn small" id="history-refresh" type="button">Refresh</button>
+      </div>
+      <p class="status" id="history-status" role="status" aria-live="polite"></p>
+      <div class="cards" id="cards"></div>
+      <button class="btn" id="history-more" type="button" hidden>Load more</button>
+    </main>
+  </div>
+
+  <dialog id="dlg-new">
+    <form method="dialog">
+      <h2>New canvas</h2>
+      <label>Name <input type="text" id="new-name" maxlength="64" placeholder="Untitled"></label>
+      <div class="row">
+        <label>Width <input type="number" id="new-width" min="1" max="256" value="32" required></label>
+        <label>Height <input type="number" id="new-height" min="1" max="256" value="32" required></label>
+      </div>
+      <div class="presets" id="presets">
+        <button type="button" class="btn small" data-size="16">16</button>
+        <button type="button" class="btn small" data-size="32">32</button>
+        <button type="button" class="btn small" data-size="64">64</button>
+        <button type="button" class="btn small" data-size="128">128</button>
+        <button type="button" class="btn small" data-size="256">256</button>
+      </div>
+      <p class="hint">Sizes from 1 to 256 pixels per side. The size is fixed once the canvas is created.</p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn solid" value="ok" id="new-ok">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-login">
+    <form method="dialog">
+      <h2>Log in</h2>
+      <label>Your handle
+        <input type="text" id="login-handle" placeholder="you.bsky.social" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      </label>
+      <p class="hint">You will approve this app on your own account's sign-in page. Your password never reaches this app. Your current drawing is kept.</p>
+      <p class="status error" id="login-error"></p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn solid" value="ok" id="login-ok">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-share">
+    <form method="dialog">
+      <h2>Share to Bluesky <span aria-hidden="true">🦋</span></h2>
+      <img id="share-preview" alt="Preview of the image that will be posted">
+      <label>Post text
+        <textarea id="share-text" rows="3" maxlength="300"></textarea>
+      </label>
+      <p class="hint">This creates a public post on your account with the image attached.</p>
+      <p class="status error" id="share-error"></p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn solid" value="ok" id="share-ok">Post</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

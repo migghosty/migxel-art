@@ -1,0 +1,12 @@
+{
+  "client_id": "https://migghosty.github.io/migxel-art/client-metadata.json",
+  "client_name": "Migxel Art",
+  "client_uri": "https://migghosty.github.io/migxel-art/",
+  "redirect_uris": ["https://migghosty.github.io/migxel-art/"],
+  "scope": "atproto transition:generic",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "web",
+  "dpop_bound_access_tokens": true
+}

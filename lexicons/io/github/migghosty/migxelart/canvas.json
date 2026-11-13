@@ -1,0 +1,60 @@
+{
+  "lexicon": 1,
+  "id": "io.github.migghosty.migxelart.canvas",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A single pixel-art canvas. Pixels are stored inline as one palette index per pixel.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["width", "height", "palette", "pixels", "createdAt"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the canvas.",
+            "maxGraphemes": 64,
+            "maxLength": 640
+          },
+          "width": {
+            "type": "integer",
+            "description": "Canvas width in pixels.",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "height": {
+            "type": "integer",
+            "description": "Canvas height in pixels.",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "palette": {
+            "type": "array",
+            "description": "Colors used by this canvas, as lowercase #rrggbb strings. A pixel value is an index into this array.",
+            "minLength": 1,
+            "maxLength": 256,
+            "items": {
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 7
+            }
+          },
+          "pixels": {
+            "type": "bytes",
+            "description": "Exactly width * height bytes in row-major order (left to right, top to bottom). Each byte is an index into palette.",
+            "minLength": 1,
+            "maxLength": 65536
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}
